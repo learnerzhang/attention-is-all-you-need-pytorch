@@ -16,6 +16,7 @@ from dataset import TranslationDataset, paired_collate_fn
 from transformer.Models import Transformer
 from transformer.Optim import ScheduledOptim
 
+
 def cal_performance(pred, gold, smoothing=False):
     ''' Apply label smoothing if needed '''
 
@@ -64,7 +65,6 @@ def train_epoch(model, training_data, optimizer, device, smoothing):
     for batch in tqdm(
             training_data, mininterval=2,
             desc='  - (Training)   ', leave=False):
-
         # prepare data
         src_seq, src_pos, tgt_seq, tgt_pos = map(lambda x: x.to(device), batch)
         gold = tgt_seq[:, 1:]
@@ -88,9 +88,10 @@ def train_epoch(model, training_data, optimizer, device, smoothing):
         n_word_total += n_word
         n_word_correct += n_correct
 
-    loss_per_word = total_loss/n_word_total
-    accuracy = n_word_correct/n_word_total
+    loss_per_word = total_loss / n_word_total
+    accuracy = n_word_correct / n_word_total
     return loss_per_word, accuracy
+
 
 def eval_epoch(model, validation_data, device):
     ''' Epoch operation in evaluation phase '''
@@ -105,7 +106,6 @@ def eval_epoch(model, validation_data, device):
         for batch in tqdm(
                 validation_data, mininterval=2,
                 desc='  - (Validation) ', leave=False):
-
             # prepare data
             src_seq, src_pos, tgt_seq, tgt_pos = map(lambda x: x.to(device), batch)
             gold = tgt_seq[:, 1:]
@@ -122,9 +122,10 @@ def eval_epoch(model, validation_data, device):
             n_word_total += n_word
             n_word_correct += n_correct
 
-    loss_per_word = total_loss/n_word_total
-    accuracy = n_word_correct/n_word_total
+    loss_per_word = total_loss / n_word_total
+    accuracy = n_word_correct / n_word_total
     return loss_per_word, accuracy
+
 
 def train(model, training_data, validation_data, optimizer, device, opt):
     ''' Start training '''
@@ -150,17 +151,17 @@ def train(model, training_data, validation_data, optimizer, device, opt):
         start = time.time()
         train_loss, train_accu = train_epoch(
             model, training_data, optimizer, device, smoothing=opt.label_smoothing)
-        print('  - (Training)   ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, '\
+        print('  - (Training)   ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, ' \
               'elapse: {elapse:3.3f} min'.format(
-                  ppl=math.exp(min(train_loss, 100)), accu=100*train_accu,
-                  elapse=(time.time()-start)/60))
+            ppl=math.exp(min(train_loss, 100)), accu=100 * train_accu,
+            elapse=(time.time() - start) / 60))
 
         start = time.time()
         valid_loss, valid_accu = eval_epoch(model, validation_data, device)
-        print('  - (Validation) ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, '\
-                'elapse: {elapse:3.3f} min'.format(
-                    ppl=math.exp(min(valid_loss, 100)), accu=100*valid_accu,
-                    elapse=(time.time()-start)/60))
+        print('  - (Validation) ppl: {ppl: 8.5f}, accuracy: {accu:3.3f} %, ' \
+              'elapse: {elapse:3.3f} min'.format(
+            ppl=math.exp(min(valid_loss, 100)), accu=100 * valid_accu,
+            elapse=(time.time() - start) / 60))
 
         valid_accus += [valid_accu]
 
@@ -172,7 +173,7 @@ def train(model, training_data, validation_data, optimizer, device, opt):
 
         if opt.save_model:
             if opt.save_mode == 'all':
-                model_name = opt.save_model + '_accu_{accu:3.3f}.chkpt'.format(accu=100*valid_accu)
+                model_name = opt.save_model + '_accu_{accu:3.3f}.chkpt'.format(accu=100 * valid_accu)
                 torch.save(checkpoint, model_name)
             elif opt.save_mode == 'best':
                 model_name = opt.save_model + '.chkpt'
@@ -184,10 +185,11 @@ def train(model, training_data, validation_data, optimizer, device, opt):
             with open(log_train_file, 'a') as log_tf, open(log_valid_file, 'a') as log_vf:
                 log_tf.write('{epoch},{loss: 8.5f},{ppl: 8.5f},{accu:3.3f}\n'.format(
                     epoch=epoch_i, loss=train_loss,
-                    ppl=math.exp(min(train_loss, 100)), accu=100*train_accu))
+                    ppl=math.exp(min(train_loss, 100)), accu=100 * train_accu))
                 log_vf.write('{epoch},{loss: 8.5f},{ppl: 8.5f},{accu:3.3f}\n'.format(
                     epoch=epoch_i, loss=valid_loss,
-                    ppl=math.exp(min(valid_loss, 100)), accu=100*valid_accu))
+                    ppl=math.exp(min(valid_loss, 100)), accu=100 * valid_accu))
+
 
 def main():
     ''' Main function '''
@@ -198,7 +200,7 @@ def main():
     parser.add_argument('-epoch', type=int, default=10)
     parser.add_argument('-batch_size', type=int, default=64)
 
-    #parser.add_argument('-d_word_vec', type=int, default=512)
+    # parser.add_argument('-d_word_vec', type=int, default=512)
     parser.add_argument('-d_model', type=int, default=512)
     parser.add_argument('-d_inner_hid', type=int, default=2048)
     parser.add_argument('-d_k', type=int, default=64)
@@ -223,7 +225,7 @@ def main():
     opt.cuda = not opt.no_cuda
     opt.d_word_vec = opt.d_model
 
-    #========= Loading Dataset =========#
+    # ========= Loading Dataset =========#
     data = torch.load(opt.data)
     opt.max_token_seq_len = data['settings'].max_token_seq_len
 
@@ -232,7 +234,7 @@ def main():
     opt.src_vocab_size = training_data.dataset.src_vocab_size
     opt.tgt_vocab_size = training_data.dataset.tgt_vocab_size
 
-    #========= Preparing Model =========#
+    # ========= Preparing Model =========#
     if opt.embs_share_weight:
         assert training_data.dataset.src_word2idx == training_data.dataset.tgt_word2idx, \
             'The src/tgt word2idx table are different but asked to share word embedding.'
@@ -261,7 +263,7 @@ def main():
             betas=(0.9, 0.98), eps=1e-09),
         opt.d_model, opt.n_warmup_steps)
 
-    train(transformer, training_data, validation_data, optimizer, device ,opt)
+    train(transformer, training_data, validation_data, optimizer, device, opt)
 
 
 def prepare_dataloaders(data, opt):

@@ -3,6 +3,7 @@ import argparse
 import torch
 import transformer.Constants as Constants
 
+
 def read_instances_from_file(inst_file, max_sent_len, keep_case):
     ''' Convert file into word seq lists and vocab '''
 
@@ -29,6 +30,7 @@ def read_instances_from_file(inst_file, max_sent_len, keep_case):
               .format(trimmed_sent_count, max_sent_len))
 
     return word_insts
+
 
 def build_vocab_idx(word_insts, min_word_count):
     ''' Trim vocab by number of occurence '''
@@ -61,9 +63,11 @@ def build_vocab_idx(word_insts, min_word_count):
     print("[Info] Ignored word count = {}".format(ignored_word_count))
     return word2idx
 
+
 def convert_instance_to_idx_seq(word_insts, word2idx):
     ''' Mapping words to idx sequence. '''
     return [[word2idx.get(w, Constants.UNK) for w in s] for s in word_insts]
+
 
 def main():
     ''' Main function '''
@@ -81,7 +85,7 @@ def main():
     parser.add_argument('-vocab', default=None)
 
     opt = parser.parse_args()
-    opt.max_token_seq_len = opt.max_word_seq_len + 2 # include the <s> and </s>
+    opt.max_token_seq_len = opt.max_word_seq_len + 2  # include the <s> and </s>
 
     # Training set
     train_src_word_insts = read_instances_from_file(
@@ -95,7 +99,7 @@ def main():
         train_src_word_insts = train_src_word_insts[:min_inst_count]
         train_tgt_word_insts = train_tgt_word_insts[:min_inst_count]
 
-    #- Remove empty instances
+    # - Remove empty instances
     train_src_word_insts, train_tgt_word_insts = list(zip(*[
         (s, t) for s, t in zip(train_src_word_insts, train_tgt_word_insts) if s and t]))
 
@@ -111,7 +115,7 @@ def main():
         valid_src_word_insts = valid_src_word_insts[:min_inst_count]
         valid_tgt_word_insts = valid_tgt_word_insts[:min_inst_count]
 
-    #- Remove empty instances
+    # - Remove empty instances
     valid_src_word_insts, valid_tgt_word_insts = list(zip(*[
         (s, t) for s, t in zip(valid_src_word_insts, valid_tgt_word_insts) if s and t]))
 
@@ -159,6 +163,7 @@ def main():
     print('[Info] Dumping the processed data to pickle file', opt.save_data)
     torch.save(data, opt.save_data)
     print('[Info] Finish.')
+
 
 if __name__ == '__main__':
     main()
